@@ -11,7 +11,7 @@ const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  entities: [path.join(__dirname, './../entity/*.entity{.ts,.js}')],
+  entities: [path.join(__dirname, '/../**/*.entity.{ts,js}')],
   synchronize: true,
   logging: process.env.NODE_ENV !== 'production',
   migrations: [
