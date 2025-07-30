@@ -56,7 +56,7 @@ export class AuthGuard implements CanActivate {
     const blacklistKey = `access_token:${token}`;
     const isBlacklisted = await this.cacheManager.get(blacklistKey);
     if (!isBlacklisted) {
-      throw new UnauthorizedException('Token is blacklisted');
+      throw new UnauthorizedException('Token is expired');
     }
 
     try {
