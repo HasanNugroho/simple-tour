@@ -4,7 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { USER_REPOSITORY } from 'src/shares/constant';
+import { CUSTOMER_REPOSITORY, USER_REPOSITORY } from 'src/shared/constant';
 import { IAuthService } from 'src/domains/account/service/auth.service.interface';
 import { IUserRepository } from 'src/domains/account/repository/user.repository.interface';
 import { ConfigService } from '@nestjs/config';
@@ -17,10 +17,14 @@ import {
   Credential,
   CredentialResponse,
 } from 'src/domains/account/entity/credential';
+import { ICustomerRepository } from 'src/domains/customer/repository/customer.repository.interface';
 
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(
+    @Inject(CUSTOMER_REPOSITORY)
+    private readonly customerRepository: ICustomerRepository,
+
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
 
@@ -33,17 +37,23 @@ export class AuthService implements IAuthService {
 
   async login(credential: Credential): Promise<CredentialResponse> {
     const credentialInstance = plainToInstance(Credential, credential);
-    const identifier = credentialInstance.email;
-    const password = credentialInstance.password;
 
     try {
-      const user = await this.userRepository.getByEmail(identifier);
+      const { email, password } = credential;
+
+      let user = await this.userRepository.getByEmail(email);
+      let role: 'employee' | 'customer' = 'employee';
+
+      if (!user) {
+        user = await this.userRepository.getByEmail(email);
+        role = 'customer';
+      }
 
       if (!user || !(await bcrypt.compare(password, user.password))) {
         throw new UnauthorizedException('Invalid identifier or password');
       }
 
-      return this.generateTokens(user.id);
+      return this.generateTokens(user.id, role);
     } catch (error) {
       throw error;
     }
@@ -85,17 +95,22 @@ export class AuthService implements IAuthService {
         }
       }
 
-      const id = claims.id || claims.payload;
-      if (!id) {
+      const id = claims.id;
+      const role = claims.role;
+      if (!id || !role) {
         throw new UnauthorizedException('Invalid token payload');
       }
 
-      const user = await this.userRepository.getById(id);
+      const user =
+        role === 'customer'
+          ? await this.customerRepository.getById(id)
+          : await this.userRepository.getById(id);
+
       if (!user) {
         throw new BadRequestException('User not found');
       }
 
-      return this.generateTokens(user.id);
+      return this.generateTokens(user.id, role);
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
         throw new UnauthorizedException('Refresh token expired');
@@ -110,7 +125,10 @@ export class AuthService implements IAuthService {
     }
   }
 
-  private async generateTokens(id: string): Promise<CredentialResponse> {
+  private async generateTokens(
+    id: string,
+    role: 'customer' | 'employee',
+  ): Promise<CredentialResponse> {
     const tokenExpiresIn = this.configService.get<string>('jwt.expired');
     const refreshExpiresIn = this.configService.get<string>(
       'jwt.refresh_expired',
@@ -134,7 +152,7 @@ export class AuthService implements IAuthService {
       `access_token:${accessToken}`,
       {
         id,
-        type: 'employee',
+        type: role,
       },
       Number(tokenExpiresIn) * 1000,
     );

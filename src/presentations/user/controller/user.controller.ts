@@ -8,9 +8,9 @@ import {
   ApiBearerAuth,
   ApiTags,
 } from '@nestjs/swagger';
-import { USER_SERVICE } from 'src/shares/constant';
+import { USER_SERVICE } from 'src/shared/constant';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { HttpResponse } from 'src/shares/dtos/response.dto';
+import { HttpResponse } from 'src/shared/dtos/response.dto';
 import { IUserService } from 'src/domains/account/service/user.service.interface';
 import { User } from 'src/domains/account/entity/user';
 

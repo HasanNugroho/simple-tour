@@ -16,17 +16,24 @@ import { Request } from 'express';
 import { User } from 'src/domains/account/entity/user';
 
 import { IUserRepository } from 'src/domains/account/repository/user.repository.interface';
+import { Customer } from 'src/domains/customer/entity/customer';
+import { ICustomerRepository } from 'src/domains/customer/repository/customer.repository.interface';
 import {
+  CUSTOMER_REPOSITORY,
+  IS_ALLOW_CUSTOMER_KEY,
   IS_PUBLIC_KEY,
   ONE_HOUR_MS,
   USER_REPOSITORY,
-} from 'src/shares/constant';
+} from 'src/shared/constant';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
+
+    @Inject(CUSTOMER_REPOSITORY)
+    private readonly customerRepository: ICustomerRepository,
 
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
@@ -39,8 +46,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    const isPublic = this.validatePublicRoles(context);
-    if (isPublic) return true;
+    if (this.validatePublicRoles(context)) return true;
 
     const token = this.extractTokenFromHeader(request);
     if (!token) {
@@ -55,9 +61,19 @@ export class AuthGuard implements CanActivate {
 
     try {
       const secret = this.configService.get<string>('jwt.secret');
-
       const payload = await this.jwtService.verifyAsync(token, { secret });
-      const user = await this.fetchUser(payload.id);
+
+      if (this.validateAllowCustomerRoles(payload, context)) {
+        throw new ForbiddenException(
+          'Customer is not allowed to access this resource',
+        );
+      }
+
+      const user =
+        payload.type == 'customer'
+          ? await this.fetchCustomer(payload.id)
+          : await this.fetchUser(payload.id);
+
       request.user = user;
 
       return true;
@@ -78,6 +94,19 @@ export class AuthGuard implements CanActivate {
     ]);
   }
 
+  private validateAllowCustomerRoles(
+    payload: any,
+    context: ExecutionContext,
+  ): boolean {
+    return (
+      payload.type == 'customer' &&
+      !this.reflector.getAllAndOverride<boolean>(IS_ALLOW_CUSTOMER_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    );
+  }
+
   private async fetchUser(userId: string): Promise<User> {
     const key = `user:${userId}`;
     const cache = await this.cacheManager.get<User | null>(key);
@@ -89,5 +118,18 @@ export class AuthGuard implements CanActivate {
 
     await this.cacheManager.set(key, user, ONE_HOUR_MS);
     return user;
+  }
+
+  private async fetchCustomer(id: string): Promise<Customer> {
+    const key = `customer:${id}`;
+    const cache = await this.cacheManager.get<Customer | null>(key);
+
+    if (cache) return plainToInstance(Customer, cache);
+
+    const customer = await this.customerRepository.getById(id);
+    if (!customer) throw new UnauthorizedException('Customer not found');
+
+    await this.cacheManager.set(key, customer, ONE_HOUR_MS);
+    return customer;
   }
 }

@@ -1,12 +1,15 @@
 // Service Injection Tokens (Symbols)
 export const USER_SERVICE = Symbol('USER_SERVICE');
 export const AUTH_SERVICE = Symbol('AUTH_SERVICE');
+export const CUSTOMER_SERVICE = Symbol('CUSTOMER_SERVICE');
 
 // Repository Injection Tokens (Symbols)
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
+export const CUSTOMER_REPOSITORY = Symbol('CUSTOMER_REPOSITORY');
 
 // Metadata Key for Public Routes
 export const IS_PUBLIC_KEY = 'isPublic';
+export const IS_ALLOW_CUSTOMER_KEY = 'isAllowCustomer';
 
 // Time Constants
 export const ONE_HOUR_S = 60 * 60;

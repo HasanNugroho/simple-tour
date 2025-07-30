@@ -5,20 +5,23 @@ import {
   UpdateDateColumn,
   Entity,
 } from 'typeorm';
-import { User } from 'src/domains/account/entity/user';
+import { Customer } from 'src/domains/customer/entity/customer';
 
-@Entity('users')
-export class UserEntity extends User {
+@Entity('customer')
+export class CustomerEntity extends Customer {
   @PrimaryGeneratedColumn('uuid')
   declare id: string;
 
   @Column({ type: 'varchar', length: 100 })
   declare name: string;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar', unique: true, length: 100 })
   declare email: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 255 })
+  declare alamat: string;
+
+  @Column({ type: 'varchar' })
   declare password: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
@@ -27,7 +30,7 @@ export class UserEntity extends User {
   @UpdateDateColumn({ type: 'timestamptz' })
   declare updatedAt: Date;
 
-  constructor(props?: Partial<User>) {
+  constructor(props?: Partial<Customer>) {
     super(props ?? {});
   }
 }

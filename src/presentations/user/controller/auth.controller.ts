@@ -16,14 +16,14 @@ import {
 } from '@nestjs/swagger';
 import { User } from 'src/domains/account/entity/user';
 import { IAuthService } from 'src/domains/account/service/auth.service.interface';
-import { AUTH_SERVICE, USER_SERVICE } from 'src/shares/constant';
-import { HttpResponse } from 'src/shares/dtos/response.dto';
+import { AUTH_SERVICE, USER_SERVICE } from 'src/shared/constant';
+import { HttpResponse } from 'src/shared/dtos/response.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { Credential } from 'src/domains/account/entity/credential';
 import { TokenPayloadDto } from '../dto/auth.dto';
 import { IUserService } from 'src/domains/account/service/user.service.interface';
-import { Public } from 'src/shares/decorators/public.decorator';
-import { CurrentUser } from 'src/shares/decorators/user.decorator';
+import { Public } from 'src/shared/decorators/public.decorator';
+import { CurrentUser } from 'src/shared/decorators/user.decorator';
 
 @ApiTags('Auth')
 @Controller('api/auth')

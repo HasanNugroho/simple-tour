@@ -6,11 +6,11 @@ import { InfrastructureModule } from './infrastructures/infrastructure.module';
 import { ApplicationModule } from './applications/application.module';
 import configuration from './infrastructures/config/app.config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { HttpExceptionFilter } from './shares/filters/http-exception.filter';
+import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
 import { KeyvOptions } from './infrastructures/config/redis.config';
 import { PresentationModule } from './presentations/user/presentation.module';
-import { AuthGuard } from './shares/guards/auth.guard';
+import { AuthGuard } from './shared/guards/auth.guard';
 
 @Module({
   imports: [

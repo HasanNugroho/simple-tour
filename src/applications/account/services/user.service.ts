@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { User } from 'src/domains/account/entity/user';
 import { IUserRepository } from 'src/domains/account/repository/user.repository.interface';
 import { IUserService } from 'src/domains/account/service/user.service.interface';
-import { USER_REPOSITORY } from 'src/shares/constant';
+import { USER_REPOSITORY } from 'src/shared/constant';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

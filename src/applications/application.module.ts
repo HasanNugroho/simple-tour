@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AUTH_SERVICE, USER_SERVICE } from 'src/shares/constant';
+import { AUTH_SERVICE, USER_SERVICE } from 'src/shared/constant';
 import { UserService } from './account/services/user.service';
 import { AuthService } from './account/services/auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
