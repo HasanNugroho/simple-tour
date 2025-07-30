@@ -5,7 +5,6 @@ import {
   Get,
   HttpStatus,
   Post,
-  Req,
 } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import {
@@ -23,6 +22,8 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { Credential } from 'src/domains/account/entity/credential';
 import { TokenPayloadDto } from '../dto/auth.dto';
 import { IUserService } from 'src/domains/account/service/user.service.interface';
+import { Public } from 'src/shares/decorators/public.decorator';
+import { CurrentUser } from 'src/shares/decorators/user.decorator';
 
 @ApiTags('Auth')
 @Controller('api/auth')
@@ -38,7 +39,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Login' })
   @ApiBadRequestResponse({ description: 'Bad request' })
   @ApiUnauthorizedResponse({ description: 'Invalid identifier or password' })
-  // @Public()
+  @Public()
   @Post('login')
   async create(@Body() payload: Credential) {
     const result = await this.authService.login(payload);
@@ -53,7 +54,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Register' })
   @ApiBadRequestResponse({ description: 'Bad request' })
   @ApiUnauthorizedResponse({ description: 'Invalid identifier or password' })
-  // @Public()
+  @Public()
   @Post('register')
   async register(@Body() payload: CreateUserDto) {
     const user = new User({
@@ -70,16 +71,16 @@ export class AuthController {
     );
   }
 
-  //   @ApiBearerAuth()
-  //   @Get('me')
-  //   async me(@CurrentUser() user: User) {
-  //     return new HttpResponse(
-  //       HttpStatus.OK,
-  //       true,
-  //       'Fetch user successfully',
-  //       user.toResponse(),
-  //     );
-  //   }
+  @ApiBearerAuth()
+  @Get('me')
+  async me(@CurrentUser() user: User) {
+    return new HttpResponse(
+      HttpStatus.OK,
+      true,
+      'Fetch user successfully',
+      user,
+    );
+  }
 
   //   @ApiBearerAuth()
   //   @Post('logout')
@@ -103,7 +104,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
   @ApiBadRequestResponse({ description: 'Missing or invalid refresh token' })
   @ApiUnauthorizedResponse({ description: 'Invalid or expired refresh token' })
-  // @Public()
+  @Public()
   @Post('refresh-token')
   async refreshToken(@Body() body: TokenPayloadDto) {
     const { refreshToken } = body;

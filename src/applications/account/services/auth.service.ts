@@ -1,9 +1,7 @@
 import {
   BadRequestException,
-  ConflictException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { USER_REPOSITORY } from 'src/shares/constant';
@@ -120,13 +118,26 @@ export class AuthService implements IAuthService {
 
     const payload = { id };
 
+    // Generate Access Token
     const accessToken = await this.jwtService.signAsync(payload, {
       expiresIn: tokenExpiresIn,
     });
+
+    // Generate Refresh Token
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: refreshExpiresIn,
       notBefore: tokenExpiresIn,
     });
+
+    // Save token to redis
+    await this.cacheManager.set(
+      `access_token:${accessToken}`,
+      {
+        id,
+        type: 'employee',
+      },
+      Number(tokenExpiresIn) * 1000,
+    );
 
     return new CredentialResponse(accessToken, refreshToken, id);
   }
