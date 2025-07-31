@@ -1,39 +1,70 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# User Transaction Api
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+REST API with NestJS framework and postgreSQL database
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## [Simple-Tour](https://github.com/HasanNugroho/simple-tour)
 
-## Description
+## Getting Started
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Requirements
 
-## Project setup
+- Node.js (v18+)
+- PostgreSQL
+- (Optional) Docker & Docker Compose
 
-```bash
-$ npm install
+### Install & Run
+
+Download this project:
+
+```shell script
+git clone git@github.com:HasanNugroho/simple-tour.git
 ```
 
-## Compile and run the project
+### Manual Installation
 
-```bash
+Install dependencies
+
+```shell script
+npm install
+```
+
+Copy environment variables
+
+```shell script
+cp .env.example .env
+```
+
+```shell script
+# Application Configuration
+NODE_ENV=development
+APP_NAME=Simple Tour
+APP_DESC=Backend for Simple Tour
+VERSION=1.0.0
+PORT=3000
+
+# PostgreSQL Database Configuration
+DB_USER=dbUser
+DB_PASS=dbPass
+DB_NAME=test
+DB_PORT=5432
+DB_HOST=localhost
+
+# Redis Configuration
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_PASSWORD=redispass
+
+# JWT Configuration
+JWT_SECRET_KEY=Rah4$14
+JWT_EXPIRED='2h'
+JWT_REFRESH_TOKEN_EXPIRED='2d'
+```
+
+Before running this project, make sure to configure your environment variables by copying .env.example and updating it with your own values.
+
+#### Run the App
+
+```shell script
 # development
 $ npm run start
 
@@ -42,57 +73,208 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+
+# running on default port 3000
 ```
 
-## Run tests
+### Run with Docker (Recomended)
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```shell script
+docker-compose up -d
 ```
 
-## Deployment
+### API Documentation
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+This project uses **Swagger** for API documentation. you can access the documentation at: **[http://localhost:3000/api](http://localhost:3000/api)**
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+![documentation](/image.png)
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+## Additional Features
+
+- Refresh Token: Allows users to obtain a new access token using a valid refresh token without re-login, improving user experience and security.
+- Logout: Revokes both access and refresh tokens, ensuring that users are fully logged out and tokens cannot be reused.
+- Pagination & Filtering: Implemented on list endpoints (e.g., customers, trips) to efficiently handle large data sets. Supports page number, limit, and filtering options for flexible data retrieval.
+
+## API Endpoints
+
+### Auth
+
+| Method | Endpoint                  | Deskripsi                                         | Autentikasi     |
+| ------ | ------------------------- | ------------------------------------------------- | --------------- |
+| POST   | `/api/auth/login`         | Login user, return token (access & refresh token) | ❌              |
+| POST   | `/api/auth/register`      | Register user baru                                | ❌              |
+| GET    | `/api/auth/me`            | Ambil data user yang sedang login                 | ✅ Bearer Token |
+| POST   | `/api/auth/logout`        | Logout user, revoke access & refresh token        | ✅ Bearer Token |
+| POST   | `/api/auth/refresh-token` | Refresh access token dengan refresh token         | ❌              |
+
+### User
+
+| Method | Endpoint     | Deskripsi         | Autentikasi     |
+| ------ | ------------ | ----------------- | --------------- |
+| POST   | `/api/users` | Membuat user baru | ✅ Bearer Token |
+
+### Customer
+
+| Method | Endpoint            | Deskripsi                                     | Autentikasi     |
+| ------ | ------------------- | --------------------------------------------- | --------------- |
+| POST   | `/api/customer`     | Membuat customer baru                         | ✅ Bearer Token |
+| GET    | `/api/customer`     | Mendapatkan list customer (dengan pagination) | ✅ Bearer Token |
+| GET    | `/api/customer/:id` | Mendapatkan detail customer berdasarkan ID    | ✅ Bearer Token |
+| PUT    | `/api/customer/:id` | Update data customer berdasarkan ID           | ✅ Bearer Token |
+| DELETE | `/api/customer/:id` | Menghapus customer berdasarkan ID             | ✅ Bearer Token |
+
+### Trip
+
+| Method | Endpoint           | Deskripsi                                                               | Autentikasi                |
+| ------ | ------------------ | ----------------------------------------------------------------------- | -------------------------- |
+| POST   | `/api/trip`        | Membuat trip baru                                                       | ✅ Bearer Token            |
+| GET    | `/api/trip`        | Mendapatkan list trip (dengan pagination)                               | ✅ Bearer Token            |
+| GET    | `/api/trip/:id`    | Mendapatkan detail trip berdasarkan ID                                  | ✅ Bearer Token            |
+| PUT    | `/api/trip/:id`    | Update data trip berdasarkan ID                                         | ✅ Bearer Token            |
+| DELETE | `/api/trip/:id`    | Menghapus trip berdasarkan ID                                           | ✅ Bearer Token            |
+| GET    | `/api/trip/my`     | Mendapatkan list trip milik customer yang sedang login                  | ✅ Bearer Token (Customer) |
+| GET    | `/api/trip/my/:id` | Mendapatkan detail trip milik customer yang sedang login berdasarkan ID | ✅ Bearer Token (Customer) |
+
+## Structures
+
+```
+simple-tour
+├── .env
+├── .env.example
+├── .gitignore
+├── .prettierrc
+├── .prettierrc.js
+├── docker-compose.yml
+├── Dockerfile
+├── eslint.config.mjs
+├── nest-cli.json
+├── package-lock.json
+├── package.json
+├── README.md
+├── src
+|  ├── app.module.ts
+|  ├── applications
+|  |  ├── account
+|  |  |  └── services
+|  |  |     ├── auth.service.ts
+|  |  |     └── user.service.ts
+|  |  ├── application.module.ts
+|  |  ├── customer
+|  |  |  └── services
+|  |  |     └── customer.service.ts
+|  |  └── trip
+|  |     └── services
+|  |        └── trip.service.ts
+|  ├── domains
+|  |  ├── account
+|  |  |  ├── entity
+|  |  |  |  ├── credential.ts
+|  |  |  |  └── user.ts
+|  |  |  ├── repository
+|  |  |  |  └── user.repository.interface.ts
+|  |  |  └── service
+|  |  |     ├── auth.service.interface.ts
+|  |  |     └── user.service.interface.ts
+|  |  ├── customer
+|  |  |  ├── entity
+|  |  |  |  └── customer.ts
+|  |  |  ├── repository
+|  |  |  |  └── customer.repository.interface.ts
+|  |  |  └── service
+|  |  |     └── customer.service.interface.ts
+|  |  └── trip
+|  |     ├── entity
+|  |     |  └── trip.ts
+|  |     ├── repository
+|  |     |  └── trip.repository.interface.ts
+|  |     └── service
+|  |        └── trip.service.interface.ts
+|  ├── infrastructures
+|  |  ├── account
+|  |  |  ├── entities
+|  |  |  |  └── user.entity.ts
+|  |  |  └── repository
+|  |  |     └── user.repository.ts
+|  |  ├── config
+|  |  |  ├── app.config.ts
+|  |  |  ├── database.config.ts
+|  |  |  └── redis.config.ts
+|  |  ├── customer
+|  |  |  ├── entities
+|  |  |  |  └── customer.entity.ts
+|  |  |  └── repository
+|  |  |     └── customer.repository.ts
+|  |  ├── infrastructure.module.ts
+|  |  └── trip
+|  |     ├── entities
+|  |     |  └── trip.entity.ts
+|  |     └── repository
+|  |        └── trip.repository.ts
+|  ├── main.ts
+|  ├── presentations
+|  |  ├── customer
+|  |  |  ├── controller
+|  |  |  |  └── customer.controller.ts
+|  |  |  └── dto
+|  |  |     ├── create-customer.dto.ts
+|  |  |     └── update-customer.dto.ts
+|  |  ├── trip
+|  |  |  ├── controller
+|  |  |  |  └── trip.controller.ts
+|  |  |  └── dto
+|  |  |     ├── create-trip.dto.ts
+|  |  |     └── update-trip.dto.ts
+|  |  └── user
+|  |     ├── controller
+|  |     |  ├── auth.controller.ts
+|  |     |  └── user.controller.ts
+|  |     ├── dto
+|  |     |  ├── auth.dto.ts
+|  |     |  └── create-user.dto.ts
+|  |     └── presentation.module.ts
+|  └── shared
+|     ├── constant.ts
+|     ├── decorators
+|     |  ├── customer-access.decorator.ts
+|     |  ├── public.decorator.ts
+|     |  └── user.decorator.ts
+|     ├── dtos
+|     |  ├── page-meta.dto.ts
+|     |  ├── page-option.dto.ts
+|     |  └── response.dto.ts
+|     ├── enums
+|     |  └── order.enum.ts
+|     ├── filters
+|     |  └── http-exception.filter.ts
+|     └── guards
+|        └── auth.guard.ts
+├── test
+|  ├── app.e2e-spec.ts
+|  └── jest-e2e.json
+├── tree.txt
+├── tsconfig.build.json
+└── tsconfig.json
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Architecture
 
-## Resources
+This project follows Domain-Driven Design (DDD) with clear separation of concerns:
 
-Check out a few resources that may come in handy when working with NestJS:
+- Domains (src/domains): Location of business model and service/repository interfaces.
+- Applications (src/applications): Implementation of the business logic according to the domain interface.
+- Infrastructure (src/infrastructures): Database connections, ORM entities and repository implementation.
+- Presentations (src/presentations): Controller and DTO for communication with clients (API).
+- Shared (src/shared): Common code such as utilities, decorators, guards and filters.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+This structure helps maintain modularity, scalability, and easier code management.
 
-## Support
+## Credits
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **[NestJS](https://nestjs.com/)** - A framework server-side applications.
+- **[TypeORM](https://typeorm.io/)** - An ORM for TypeScript and JavaScript.
+- **[Swagger](https://swagger.io/)** - A tool API documentation.
+- **[PostgreSQL](https://www.postgresql.org/)** - Relational database system.
 
-## Stay in touch
+## Copyright
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Copyright (c) 2025 Burhan Nurhasan Nugroho.

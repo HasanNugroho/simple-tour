@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Post,
+  Req,
 } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import {
@@ -83,24 +84,24 @@ export class AuthController {
     );
   }
 
-  //   @ApiBearerAuth()
-  //   @Post('logout')
-  //   async logout(@Req() req: any, @Body() body: TokenPayloadDto) {
-  //     const accessToken = req.headers['authorization']?.split(' ')[1];
-  //     const refreshToken = body.refreshToken;
+  @ApiBearerAuth()
+  @Post('logout')
+  async logout(@Req() req: any, @Body() body: TokenPayloadDto) {
+    const accessToken = req.headers['authorization']?.split(' ')[1];
+    const refreshToken = body.refreshToken;
 
-  //     if (!accessToken || !refreshToken) {
-  //       throw new BadRequestException('Access token or refresh token is missing');
-  //     }
+    if (!accessToken || !refreshToken) {
+      throw new BadRequestException('Access token or refresh token is missing');
+    }
 
-  //     await this.authService.logout(accessToken, refreshToken);
-  //     return new HttpResponse(
-  //       HttpStatus.OK,
-  //       true,
-  //       'User logged out successfully',
-  //       null,
-  //     );
-  //   }
+    await this.authService.logout(accessToken, refreshToken);
+    return new HttpResponse(
+      HttpStatus.OK,
+      true,
+      'User logged out successfully',
+      null,
+    );
+  }
 
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
   @ApiBadRequestResponse({ description: 'Missing or invalid refresh token' })
@@ -111,7 +112,7 @@ export class AuthController {
     const { refreshToken } = body;
 
     if (!refreshToken) {
-      throw new BadRequestException('User ID and refresh token are required');
+      throw new BadRequestException('refresh token are required');
     }
 
     const result = await this.authService.refreshToken(refreshToken);

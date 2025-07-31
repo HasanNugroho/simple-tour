@@ -24,11 +24,9 @@ WORKDIR /app
 # Copy the build result and package.json files to the final image
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/src/config/permissions.json ./src/config/permissions.json
-COPY --from=builder /app/src/config/default-roles.json ./src/config/default-roles.json
 
 # Install only production dependencies
 RUN npm ci --omit=dev
 
 # Start the application
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/main.js"]

@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { Customer } from 'src/domains/customer/entity/customer';
 
-@Entity('customer')
+@Entity('customers')
 export class CustomerEntity extends Customer {
   @PrimaryGeneratedColumn('uuid')
   declare id: string;

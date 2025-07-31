@@ -50,7 +50,7 @@ export class AuthGuard implements CanActivate {
 
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException('Token not provided or malformed');
+      throw new UnauthorizedException('Unauthorized');
     }
 
     if (this.validateAllowCustomerRoles(context)) {
@@ -126,7 +126,16 @@ export class AuthGuard implements CanActivate {
     const key = `customer:${token}`;
     const cache = await this.cacheManager.get<Customer | null>(key);
 
-    if (cache) return plainToInstance(Customer, cache);
+    if (cache)
+      return new Customer({
+        id: cache.id,
+        name: cache.name,
+        email: cache.email,
+        address: cache.address,
+        token: cache.token,
+        createdAt: cache.createdAt,
+        updatedAt: cache.updatedAt,
+      });
 
     const customer = await this.customerRepository.getByToken(token);
     if (!customer) throw new UnauthorizedException('Customer not found');
