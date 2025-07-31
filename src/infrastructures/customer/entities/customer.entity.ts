@@ -19,10 +19,10 @@ export class CustomerEntity extends Customer {
   declare email: string;
 
   @Column({ type: 'varchar', length: 255 })
-  declare alamat: string;
+  declare address: string;
 
   @Column({ type: 'varchar' })
-  declare password: string;
+  declare token: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   declare createdAt: Date;

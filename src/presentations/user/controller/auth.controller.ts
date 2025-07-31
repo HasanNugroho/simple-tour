@@ -74,11 +74,12 @@ export class AuthController {
   @ApiBearerAuth()
   @Get('me')
   async me(@CurrentUser() user: User) {
+    const { password, ...userData } = user;
     return new HttpResponse(
       HttpStatus.OK,
       true,
       'Fetch user successfully',
-      user,
+      userData,
     );
   }
 

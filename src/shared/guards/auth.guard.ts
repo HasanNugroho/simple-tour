@@ -53,31 +53,32 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Token not provided or malformed');
     }
 
-    const blacklistKey = `access_token:${token}`;
-    const isBlacklisted = await this.cacheManager.get(blacklistKey);
-    if (!isBlacklisted) {
-      throw new UnauthorizedException('Token is expired');
+    if (this.validateAllowCustomerRoles(context)) {
+      const customer = await this.fetchCustomer(token);
+      if (!customer) throw new UnauthorizedException('Customer not found');
+
+      request.customer = customer;
+      return true;
+    }
+
+    const blacklisted = await this.cacheManager.get(
+      `blacklist:access-token:${token}`,
+    );
+    if (blacklisted) {
+      throw new UnauthorizedException('Token is blacklisted');
     }
 
     try {
       const secret = this.configService.get<string>('jwt.secret');
       const payload = await this.jwtService.verifyAsync(token, { secret });
 
-      if (this.validateAllowCustomerRoles(payload, context)) {
-        throw new ForbiddenException(
-          'Customer is not allowed to access this resource',
-        );
-      }
-
-      const user =
-        payload.type == 'customer'
-          ? await this.fetchCustomer(payload.id)
-          : await this.fetchUser(payload.id);
+      const user = await this.fetchUser(payload.id);
 
       request.user = user;
 
       return true;
     } catch (error) {
+      console.error(error);
       throw new UnauthorizedException('Invalid or expired token', error);
     }
   }
@@ -94,24 +95,25 @@ export class AuthGuard implements CanActivate {
     ]);
   }
 
-  private validateAllowCustomerRoles(
-    payload: any,
-    context: ExecutionContext,
-  ): boolean {
-    return (
-      payload.type == 'customer' &&
-      !this.reflector.getAllAndOverride<boolean>(IS_ALLOW_CUSTOMER_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ])
-    );
+  private validateAllowCustomerRoles(context: ExecutionContext): boolean {
+    return this.reflector.getAllAndOverride<boolean>(IS_ALLOW_CUSTOMER_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
   }
 
   private async fetchUser(userId: string): Promise<User> {
     const key = `user:${userId}`;
     const cache = await this.cacheManager.get<User | null>(key);
-
-    if (cache) return plainToInstance(User, cache);
+    if (cache)
+      return new User({
+        id: cache.id,
+        name: cache.name,
+        email: cache.email,
+        password: cache.password,
+        createdAt: cache.createdAt,
+        updatedAt: cache.updatedAt,
+      });
 
     const user = await this.userRepository.getById(userId);
     if (!user) throw new UnauthorizedException('User not found');
@@ -120,13 +122,13 @@ export class AuthGuard implements CanActivate {
     return user;
   }
 
-  private async fetchCustomer(id: string): Promise<Customer> {
-    const key = `customer:${id}`;
+  private async fetchCustomer(token: string): Promise<Customer> {
+    const key = `customer:${token}`;
     const cache = await this.cacheManager.get<Customer | null>(key);
 
     if (cache) return plainToInstance(Customer, cache);
 
-    const customer = await this.customerRepository.getById(id);
+    const customer = await this.customerRepository.getByToken(token);
     if (!customer) throw new UnauthorizedException('Customer not found');
 
     await this.cacheManager.set(key, customer, ONE_HOUR_MS);

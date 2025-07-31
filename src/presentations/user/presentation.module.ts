@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { ApplicationModule } from 'src/applications/application.module';
 import { UserController } from './controller/user.controller';
 import { AuthController } from './controller/auth.controller';
+import { CustomerController } from '../customer/controller/customer.controller';
 
 @Module({
   imports: [ApplicationModule],
-  controllers: [UserController, AuthController],
+  controllers: [UserController, AuthController, CustomerController],
 })
 export class PresentationModule {}

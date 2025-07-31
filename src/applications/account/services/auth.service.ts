@@ -36,24 +36,16 @@ export class AuthService implements IAuthService {
   ) {}
 
   async login(credential: Credential): Promise<CredentialResponse> {
-    const credentialInstance = plainToInstance(Credential, credential);
-
     try {
       const { email, password } = credential;
 
-      let user = await this.userRepository.getByEmail(email);
-      let role: 'employee' | 'customer' = 'employee';
-
-      if (!user) {
-        user = await this.userRepository.getByEmail(email);
-        role = 'customer';
-      }
+      const user = await this.userRepository.getByEmail(email);
 
       if (!user || !(await bcrypt.compare(password, user.password))) {
-        throw new UnauthorizedException('Invalid identifier or password');
+        throw new UnauthorizedException('Invalid email or password');
       }
 
-      return this.generateTokens(user.id, role);
+      return this.generateTokens(user.id);
     } catch (error) {
       throw error;
     }
@@ -96,21 +88,16 @@ export class AuthService implements IAuthService {
       }
 
       const id = claims.id;
-      const role = claims.role;
-      if (!id || !role) {
+      if (!id) {
         throw new UnauthorizedException('Invalid token payload');
       }
 
-      const user =
-        role === 'customer'
-          ? await this.customerRepository.getById(id)
-          : await this.userRepository.getById(id);
-
+      const user = await this.userRepository.getById(id);
       if (!user) {
         throw new BadRequestException('User not found');
       }
 
-      return this.generateTokens(user.id, role);
+      return this.generateTokens(user.id);
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
         throw new UnauthorizedException('Refresh token expired');
@@ -125,10 +112,7 @@ export class AuthService implements IAuthService {
     }
   }
 
-  private async generateTokens(
-    id: string,
-    role: 'customer' | 'employee',
-  ): Promise<CredentialResponse> {
+  private async generateTokens(id: string): Promise<CredentialResponse> {
     const tokenExpiresIn = this.configService.get<string>('jwt.expired');
     const refreshExpiresIn = this.configService.get<string>(
       'jwt.refresh_expired',
@@ -146,16 +130,6 @@ export class AuthService implements IAuthService {
       expiresIn: refreshExpiresIn,
       notBefore: tokenExpiresIn,
     });
-
-    // Save token to redis
-    await this.cacheManager.set(
-      `access_token:${accessToken}`,
-      {
-        id,
-        type: role,
-      },
-      Number(tokenExpiresIn) * 1000,
-    );
 
     return new CredentialResponse(accessToken, refreshToken, id);
   }

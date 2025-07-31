@@ -4,8 +4,8 @@ export class Customer {
   id: string;
   name: string;
   email: string;
-  password: string;
-  alamat: string;
+  token: string;
+  address: string;
   createdAt: Date;
   updatedAt: Date;
 
@@ -13,7 +13,7 @@ export class Customer {
     this.id = props.id ?? uuidv4();
     this.name = props.name ?? '';
     this.email = props.email ?? '';
-    this.password = props.password ?? '';
-    this.alamat = props.alamat ?? '';
+    this.token = props.token ?? '';
+    this.address = props.address ?? '';
   }
 }

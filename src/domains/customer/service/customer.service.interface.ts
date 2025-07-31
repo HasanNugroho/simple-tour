@@ -1,3 +1,4 @@
+import { PaginationOptionsDto } from 'src/shared/dtos/page-option.dto';
 import { Customer } from '../entity/customer';
 
 export interface ICustomerService {
@@ -15,6 +16,17 @@ export interface ICustomerService {
    * @returns A promise that resolves to the customer object or null if not found.
    */
   findById(id: string): Promise<Customer | null>;
+
+  /**
+   * Retrieve a paginated list of customers.
+   * @param option - The pagination and filter options.
+   * @returns A promise that resolves to an object containing:
+   *  - data: An array of customers for the current page.
+   *  - totalCount: The total number of customers matching the criteria.
+   */
+  findAll(
+    option: PaginationOptionsDto,
+  ): Promise<{ data: Customer[]; totalCount: number }>;
 
   /**
    * Update an existing customer's data.

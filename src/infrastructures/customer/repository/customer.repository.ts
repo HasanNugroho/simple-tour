@@ -5,11 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 
 import { CustomerEntity } from '../entities/customer.entity';
 import { Customer } from 'src/domains/customer/entity/customer';
 import { ICustomerRepository } from 'src/domains/customer/repository/customer.repository.interface';
+import { PaginationOptionsDto } from 'src/shared/dtos/page-option.dto';
 
 @Injectable()
 export class CustomerRepository implements ICustomerRepository {
@@ -26,6 +27,37 @@ export class CustomerRepository implements ICustomerRepository {
   async getByEmail(email: string): Promise<Customer | null> {
     const entity = await this.db.findOneBy({ email });
     return entity ? this.toDomain(entity) : null;
+  }
+
+  async getByToken(token: string): Promise<Customer | null> {
+    const entity = await this.db.findOneBy({ token });
+    return entity ? this.toDomain(entity) : null;
+  }
+
+  async getAll(
+    option: PaginationOptionsDto,
+  ): Promise<{ data: Customer[]; totalCount: number }> {
+    const offset = (option.page - 1) * option.limit;
+    let where: FindOptionsWhere<Customer>[] = [];
+
+    if (option.keyword) {
+      where = [
+        { name: ILike(`${option.keyword}%`) },
+        { email: ILike(`${option.keyword}%`) },
+      ];
+    }
+
+    const [result, totalCount] = await this.db.findAndCount({
+      where: where.length ? where : {},
+      order: {
+        [option.orderby || 'createdAt']: option.order || 'DESC',
+      },
+      skip: offset,
+      take: option.limit,
+    });
+
+    const customers = result.map((i) => this.toDomain(i));
+    return { data: customers, totalCount };
   }
 
   async update(id: string, customerData: Partial<Customer>): Promise<Customer> {
@@ -59,7 +91,8 @@ export class CustomerRepository implements ICustomerRepository {
       id: entity.id,
       name: entity.name,
       email: entity.email,
-      password: entity.password,
+      address: entity.address,
+      token: entity.token,
     });
   }
 
@@ -68,7 +101,8 @@ export class CustomerRepository implements ICustomerRepository {
       id: domain.id,
       name: domain.name,
       email: domain.email,
-      password: domain.password,
+      address: domain.address,
+      token: domain.token,
     });
   }
 }

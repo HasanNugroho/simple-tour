@@ -5,6 +5,7 @@ export class Credential {
   @ApiProperty({
     description: 'username or email',
     required: true,
+    example: 'adam@user.com',
   })
   @IsEmail()
   email: string;
@@ -12,6 +13,7 @@ export class Credential {
   @ApiProperty({
     description: 'password',
     required: true,
+    example: 'adam123!',
   })
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long.' })
